@@ -15,21 +15,20 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh "./gradlew clean test"
+                // 만약 H2 프로파일 쓰게 해놨으면:
+                sh "SPRING_PROFILES_ACTIVE=test ./gradlew clean test"
             }
         }
 
         stage('BootJar') {
             steps {
-                sh "./gradlew bootJar"
+                sh "./gradlew bootJar -x test"
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh """
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                """
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
