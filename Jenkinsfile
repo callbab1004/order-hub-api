@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "order-hub-api"
         IMAGE_TAG  = "${env.BUILD_NUMBER}"
+        DOCKER_REPO = "shp93/order-hub-api"
     }
 
     stages {
@@ -32,8 +33,21 @@ pipeline {
             }
         }
 
-        // 나중에 레지스트리 쓰면 여기서 push 추가 예정
-        // stage('Docker Push') { ... }
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: '7cc0e225-39a1-40ab-a88b-02f617894164',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                      docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REPO}:${IMAGE_TAG}
+                      docker push ${DOCKER_REPO}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
     }
 
     post {
